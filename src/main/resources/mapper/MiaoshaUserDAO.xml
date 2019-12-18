@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.iluo.vacations.dao.MiaoshaUserDAO">
-  <resultMap id="BaseResultMap" type="com.iluo.vacations.po.MiaoshaUser">
+<mapper namespace="com.iluo.dao.MiaoshaUserDAO">
+  <resultMap id="BaseResultMap" type="com.iluo.po.MiaoshaUser">
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="nickname" jdbcType="VARCHAR" property="nickname" />
     <result column="password" jdbcType="VARCHAR" property="password" />
@@ -72,7 +72,7 @@
   <sql id="Base_Column_List">
     id, nickname, `password`, salt, head, register_date, last_login_date, login_count
   </sql>
-  <select id="selectByExample" parameterType="com.iluo.vacations.po.MiaoshaUserExample" resultMap="BaseResultMap">
+  <select id="selectByExample" parameterType="com.iluo.po.MiaoshaUserExample" resultMap="BaseResultMap">
     select
     <if test="distinct">
       distinct
@@ -104,23 +104,26 @@
     delete from miaosha_user
     where id = #{id,jdbcType=BIGINT}
   </delete>
-  <delete id="deleteByExample" parameterType="com.iluo.vacations.po.MiaoshaUserExample">
+  <delete id="deleteByExample" parameterType="com.iluo.po.MiaoshaUserExample">
     delete from miaosha_user
     <if test="_parameter != null">
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.iluo.vacations.po.MiaoshaUser" useGeneratedKeys="true">
-    insert into miaosha_user (nickname, `password`, salt, 
-      head, register_date, last_login_date, 
-      login_count)
-    values (#{nickname,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{salt,jdbcType=VARCHAR}, 
-      #{head,jdbcType=VARCHAR}, #{registerDate,jdbcType=TIMESTAMP}, #{lastLoginDate,jdbcType=TIMESTAMP}, 
-      #{loginCount,jdbcType=INTEGER})
+  <insert id="insert" parameterType="com.iluo.po.MiaoshaUser">
+    insert into miaosha_user (id, nickname, `password`, 
+      salt, head, register_date, 
+      last_login_date, login_count)
+    values (#{id,jdbcType=BIGINT}, #{nickname,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
+      #{salt,jdbcType=VARCHAR}, #{head,jdbcType=VARCHAR}, #{registerDate,jdbcType=TIMESTAMP}, 
+      #{lastLoginDate,jdbcType=TIMESTAMP}, #{loginCount,jdbcType=INTEGER})
   </insert>
-  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.iluo.vacations.po.MiaoshaUser" useGeneratedKeys="true">
+  <insert id="insertSelective" parameterType="com.iluo.po.MiaoshaUser">
     insert into miaosha_user
     <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
       <if test="nickname != null">
         nickname,
       </if>
@@ -144,6 +147,9 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
       <if test="nickname != null">
         #{nickname,jdbcType=VARCHAR},
       </if>
@@ -167,7 +173,7 @@
       </if>
     </trim>
   </insert>
-  <select id="countByExample" parameterType="com.iluo.vacations.po.MiaoshaUserExample" resultType="java.lang.Long">
+  <select id="countByExample" parameterType="com.iluo.po.MiaoshaUserExample" resultType="java.lang.Long">
     select count(*) from miaosha_user
     <if test="_parameter != null">
       <include refid="Example_Where_Clause" />
@@ -219,7 +225,7 @@
       <include refid="Update_By_Example_Where_Clause" />
     </if>
   </update>
-  <update id="updateByPrimaryKeySelective" parameterType="com.iluo.vacations.po.MiaoshaUser">
+  <update id="updateByPrimaryKeySelective" parameterType="com.iluo.po.MiaoshaUser">
     update miaosha_user
     <set>
       <if test="nickname != null">
@@ -246,7 +252,7 @@
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
-  <update id="updateByPrimaryKey" parameterType="com.iluo.vacations.po.MiaoshaUser">
+  <update id="updateByPrimaryKey" parameterType="com.iluo.po.MiaoshaUser">
     update miaosha_user
     set nickname = #{nickname,jdbcType=VARCHAR},
       `password` = #{password,jdbcType=VARCHAR},
