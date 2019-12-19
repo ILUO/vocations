@@ -1,8 +1,9 @@
 package com.iluo.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.iluo.po.MiaoshaUser;
+import com.iluo.access.AccessLimit;
 import com.iluo.service.UserService;
+import com.iluo.util.CommonUtil;
 import com.iluo.vo.LoginVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,6 +28,20 @@ public class UserController {
     public JSONObject Register(HttpServletResponse response,
                                @ApiParam(value = "用户信息") @RequestBody LoginVo loginVo){
         return service.register(response,loginVo);
+    }
+
+    @ApiOperation(value = "登录")
+    @PostMapping(value = "/login")
+    public JSONObject Login(HttpServletResponse response,
+                            @ApiParam(value = "登录信息") @RequestBody LoginVo loginVo){
+        return  service.login(response,loginVo);
+    }
+
+    @AccessLimit(seconds = 5, maxCount = 5, needLogin = true)
+    @ApiOperation(value = "测试")
+    @GetMapping(value = "/test")
+    public JSONObject test(){
+        return CommonUtil.successJson();
     }
 
 }

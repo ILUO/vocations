@@ -9,5 +9,11 @@ import com.iluo.vo.LoginVo;
 import javax.servlet.http.HttpServletResponse;
 
 public interface UserService {
-    public JSONObject register(HttpServletResponse response, LoginVo loginVo);
+    String COOKIE_NAME_TOKEN = "token" ;
+
+    JSONObject register(HttpServletResponse response, LoginVo loginVo);
+
+    JSONObject login(HttpServletResponse response, LoginVo loginVo);
+
+    MiaoshaUser getByToken(HttpServletResponse response , String token);
 }
