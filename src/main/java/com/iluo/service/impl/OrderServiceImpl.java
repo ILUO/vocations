@@ -7,6 +7,7 @@ import com.iluo.po.MiaoshaUser;
 import com.iluo.po.OrderInfo;
 import com.iluo.redis.OrderKey;
 import com.iluo.redis.RedisService;
+import com.iluo.service.GoodsService;
 import com.iluo.service.OrderService;
 import com.iluo.vo.GoodsVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +32,13 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private RedisService redisService;
 
+    @Autowired
+    private GoodsService goodsService;
+
     @Override
     @Transactional
-    public OrderInfo createOrder(MiaoshaUser user, GoodsVo goods) {
+    public OrderInfo createOrder(MiaoshaUser user, Long goodsId) {
+        GoodsVo goods = goodsService.getGoodsVoById(goodsId);
         OrderInfo orderInfo = new OrderInfo();
         orderInfo.setCreateDate(new Date());
         orderInfo.setDeliveryAddrId(0L);
@@ -43,12 +48,12 @@ public class OrderServiceImpl implements OrderService {
         orderInfo.setGoodsPrice(new BigDecimal(goods.getMiaoshaPrice().toString()));
         orderInfo.setOrderChannel(1);
         orderInfo.setStatus(0);
-        orderInfo.setUserId(Long.valueOf(user.getNickname()));
+        orderInfo.setUserId(user.getId());
         orderDao.insert(orderInfo);
         MiaoshaOrder miaoshaOrder = new MiaoshaOrder();
         miaoshaOrder.setGoodsId(goods.getId());
         miaoshaOrder.setOrderId(orderInfo.getId());
-        miaoshaOrder.setUserId(Long.valueOf(user.getNickname()));
+        miaoshaOrder.setUserId(user.getId());
         miaoshaOrderDAO.insert(miaoshaOrder);
         redisService.set(OrderKey.getMiaoshaOrderByUidGid,""+user.getNickname()+"_"+goods.getId(),miaoshaOrder) ;
         return orderInfo;

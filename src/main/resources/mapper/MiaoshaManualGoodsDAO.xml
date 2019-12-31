@@ -3,7 +3,7 @@
 <mapper namespace="com.iluo.dao.MiaoshaGoodsManualDAO">
     <update id="reduceStockPessimism">
         update miaosha_goods
-        set stock_count = stock_count = stock_count - 1,
+        set stock_count = stock_count - 1
         where id = #{id,jdbcType=BIGINT}
         and stock_count > 0;
     </update>

@@ -39,14 +39,15 @@ public class MiaoShaController implements InitializingBean{
 
     private HashMap<Long,Boolean> localHashMap = new HashMap<>();
 
-    @AccessLimit(seconds = 5,maxCount = 5)
-    @GetMapping("/{path}/Pessimism")
-    @ApiOperation(value = "悲观锁")
+    //@AccessLimit(seconds = 5,maxCount = 5,needLogin = true)
+    @PostMapping("/{path}/Pessimism")
+    @ApiOperation(value = "悲观锁秒杀")
     public JSONObject miaoshaPessimism(MiaoshaUser miaoshaUser, @PathVariable("path") String path,
                                        @ApiParam(value = "商品ID") @RequestParam("goodsId") Long goodsId){
-        if(!miaoshaService.checkPath(miaoshaUser,goodsId,path)) return CommonUtil.errorJson("秒杀接口错误");
+//        if(!miaoshaService.checkPath(miaoshaUser,goodsId,path)) return CommonUtil.errorJson("秒杀接口错误");
         return miaoshaService.miaoshaPessimism(miaoshaUser,goodsId);
     }
+
 
     @GetMapping("/getPath")
     @ApiOperation(value = "获得秒杀接口路径")
@@ -54,7 +55,13 @@ public class MiaoShaController implements InitializingBean{
         return miaoshaService.getMiaoshaPath(miaoshaUser,goodsId);
     }
 
-
+    //@AccessLimit(seconds = 5,maxCount = 5,needLogin = true)
+    @PostMapping("/{path}/Optimism")
+    @ApiOperation(value = "乐观锁秒杀")
+    public JSONObject miaoshaOptimism(MiaoshaUser miaoshaUser,@PathVariable("path") String path,
+                                      @ApiParam(value = "商品id") @RequestParam("goodsId") Long goodsId){
+        return miaoshaService.miaoshaOptimism(miaoshaUser,goodsId);
+    }
 
     @Override
     public void afterPropertiesSet(){

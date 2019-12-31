@@ -1,7 +1,9 @@
 package com.iluo.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.iluo.dao.MiaoshaGoodsDAO;
 import com.iluo.dao.MiaoshaGoodsManualDAO;
+import com.iluo.po.MiaoshaGoods;
 import com.iluo.po.MiaoshaUser;
 import com.iluo.redis.MiaoshaKey;
 import com.iluo.redis.RedisService;
@@ -26,6 +28,8 @@ public class MiaoshaServiceImpl implements MiaoshaService {
     @Autowired
     private RedisService redisService;
 
+    @Autowired
+    private MiaoshaGoodsDAO miaoshaGoodsDAO;
 
     @Autowired
     private OrderService orderService;
@@ -37,11 +41,29 @@ public class MiaoshaServiceImpl implements MiaoshaService {
     public JSONObject miaoshaPessimism(MiaoshaUser miaoshaUser,Long id){
         int res = miaoshaGoodsManualDAO.reduceStockPessimism(id);
         if(res > 0){
-            GoodsVo goodsVo = goodsService.getGoodsVoById(id);
-            orderService.createOrder(miaoshaUser,goodsVo);
+            orderService.createOrder(miaoshaUser,id);
             return CommonUtil.successJson();
         }
         else return CommonUtil.errorJson("秒杀失败");
+    }
+
+
+    @Override
+    public JSONObject miaoshaOptimism(MiaoshaUser miaoshaUser,Long goodsId){
+        int res = 0;
+        for(int i = 1;i < 5;i++){
+            MiaoshaGoods miaoshaGoods = miaoshaGoodsDAO.selectByPrimaryKey(goodsId);
+            int version = miaoshaGoods.getVersion();
+            int stock = miaoshaGoods.getStockCount();
+            if(stock <= 0) return CommonUtil.errorJson("商品已经抢光");
+            res = miaoshaGoodsManualDAO.reduceStockOptimism(goodsId,version,stock);
+            if(res > 0) break;
+        }
+        if(res > 0){
+            orderService.createOrder(miaoshaUser,goodsId);
+            return CommonUtil.successJson();
+        }else return CommonUtil.errorJson("秒杀失败");
+
     }
 
 

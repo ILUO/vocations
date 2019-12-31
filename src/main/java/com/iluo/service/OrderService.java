@@ -11,5 +11,5 @@ import org.springframework.transaction.annotation.Transactional;
  * Created by Yang Xing Luo on 2019/12/27.
  */
 public interface OrderService {
-    OrderInfo createOrder(MiaoshaUser user, GoodsVo goodsVo);
+    OrderInfo createOrder(MiaoshaUser user, Long goodsId);
 }

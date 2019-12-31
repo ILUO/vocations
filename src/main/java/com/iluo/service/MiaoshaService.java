@@ -1,6 +1,7 @@
 package com.iluo.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.iluo.po.MiaoshaOrder;
 import com.iluo.po.MiaoshaUser;
 
 /**
@@ -12,4 +13,6 @@ public interface MiaoshaService {
     String getMiaoshaPath(MiaoshaUser user,Long goodsId);
 
     Boolean checkPath(MiaoshaUser user,Long goodsId,String Path);
+
+    JSONObject miaoshaOptimism(MiaoshaUser user,Long goodsId);
 }
