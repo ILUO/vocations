@@ -13,9 +13,11 @@ import com.iluo.service.OrderService;
 import com.iluo.util.CommonUtil;
 import com.iluo.util.MD5Utils;
 import com.iluo.util.UUIDUtil;
-import com.iluo.vo.GoodsVo;
+import com.iluo.vo.LoginVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by Yang Xing Luo on 2019/12/26.
@@ -80,5 +82,29 @@ public class MiaoshaServiceImpl implements MiaoshaService {
         if(user == null || goodsId == null || path == null) return false;
         String p = redisService.get(MiaoshaKey.getMiaoshaPath,""+user.getNickname() + "_" + goodsId,String.class);
         return p.equals(path);
+    }
+
+    public String createToken(HttpServletResponse response , LoginVo loginVo) {
+        if(loginVo ==null){
+            throw  new GlobleException(SYSTEM_ERROR);
+        }
+
+        String mobile =loginVo.getMobile();
+        String password =loginVo.getPassword();
+        MiaoshaUser user = getByNickName(mobile);
+        if(user == null) {
+            throw new GlobleException(MOBILE_NOT_EXIST);
+        }
+
+        String dbPass = user.getPassword();
+        String saltDb = user.getSalt();
+        String calcPass = MD5Utils.formPassToDBPass(password,saltDb);
+        if(!calcPass.equals(dbPass)){
+            throw new GlobleException(PASSWORD_ERROR);
+        }
+        //生成cookie 将session返回游览器 分布式session
+        String token= UUIDUtil.uuid();
+        addCookie(response, token, user);
+        return token ;
     }
 }

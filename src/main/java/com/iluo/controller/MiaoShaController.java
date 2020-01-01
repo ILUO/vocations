@@ -1,7 +1,6 @@
 package com.iluo.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.iluo.access.AccessLimit;
 import com.iluo.dao.GoodsDAO;
 import com.iluo.po.Goods;
 import com.iluo.po.GoodsExample;
@@ -9,7 +8,6 @@ import com.iluo.po.MiaoshaUser;
 import com.iluo.redis.GoodsKey;
 import com.iluo.redis.RedisService;
 import com.iluo.service.MiaoshaService;
-import com.iluo.util.CommonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

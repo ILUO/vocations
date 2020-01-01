@@ -1,8 +1,6 @@
 package com.iluo.config.system;
 
 import com.iluo.access.AccessInterceptor;
-import com.iluo.redis.RedisService;
-import com.iluo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

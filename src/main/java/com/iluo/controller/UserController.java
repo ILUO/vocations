@@ -8,10 +8,13 @@ import com.iluo.vo.LoginVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 /**
  * Created by Yang Xing Luo on 2019/12/18.
@@ -20,6 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping("/user")
 @Api(value = "用户")
 public class UserController {
+    private static Logger logger = LoggerFactory.getLogger(UserController.class);
+
     @Autowired
     private UserService service;
 
@@ -42,6 +47,15 @@ public class UserController {
     @GetMapping(value = "/test")
     public JSONObject test(){
         return CommonUtil.successJson();
+    }
+
+
+    @RequestMapping("/create_token")
+    @ResponseBody
+    public String createToken(HttpServletResponse response, @Valid LoginVo loginVo) {
+        logger.info(loginVo.toString());
+        String token = service.createToken(response, loginVo);
+        return token;
     }
 
 }

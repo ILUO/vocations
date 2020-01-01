@@ -24,3 +24,4 @@ redis:
   poolMaxTotal: 1000
   pollMaxIdle: 500
   pollMaxWait: 500
+
