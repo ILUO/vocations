@@ -67,7 +67,8 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    private void addCookie(HttpServletResponse response, String token, MiaoshaUser user) {
+    @Override
+    public void addCookie(HttpServletResponse response, String token, MiaoshaUser user) {
         redisService.set(MiaoShaUserKey.token, token, user);
         Cookie cookie = new Cookie(COOKIE_NAME_TOKEN, token);
         //设置有效期

@@ -7,7 +7,9 @@ public enum ErrorEnum {    /*
     E_500("500", "请求方式有误,请检查 GET/POST"),
     E_501("501", "请求路径不存在"),
     E_502("502", "权限不足"),
-    E_504("504", "session不存在或者已失效");
+    E_504("504", "session不存在或者已失效"),
+    E_505("505", "系统错误");
+
 
 
     private String errorCode;

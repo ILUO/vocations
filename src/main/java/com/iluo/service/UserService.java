@@ -16,4 +16,6 @@ public interface UserService {
     JSONObject login(HttpServletResponse response, LoginVo loginVo);
 
     MiaoshaUser getByToken(HttpServletResponse response , String token);
+
+    void addCookie(HttpServletResponse response, String token, MiaoshaUser user);
 }

@@ -2,6 +2,7 @@ package com.iluo.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.iluo.access.AccessLimit;
+import com.iluo.service.MiaoshaService;
 import com.iluo.service.UserService;
 import com.iluo.util.CommonUtil;
 import com.iluo.vo.LoginVo;
@@ -28,6 +29,9 @@ public class UserController {
     @Autowired
     private UserService service;
 
+    @Autowired
+    private MiaoshaService miaoshaService;
+
     @ApiOperation(value = "注册")
     @PostMapping(value = "/register")
     public JSONObject Register(HttpServletResponse response,
@@ -50,11 +54,11 @@ public class UserController {
     }
 
 
-    @RequestMapping("/create_token")
+    @PostMapping("/create_token")
     @ResponseBody
     public String createToken(HttpServletResponse response, @Valid LoginVo loginVo) {
         logger.info(loginVo.toString());
-        String token = service.createToken(response, loginVo);
+        String token = miaoshaService.createToken(response, loginVo);
         return token;
     }
 

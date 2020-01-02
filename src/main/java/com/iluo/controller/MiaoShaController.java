@@ -39,7 +39,7 @@ public class MiaoShaController implements InitializingBean{
 
     //@AccessLimit(seconds = 5,maxCount = 5,needLogin = true)
     @PostMapping("/{path}/Pessimism")
-    @ApiOperation(value = "悲观锁秒杀")
+    @ApiOperation(value = "悲观锁防止超发")
     public JSONObject miaoshaPessimism(MiaoshaUser miaoshaUser, @PathVariable("path") String path,
                                        @ApiParam(value = "商品ID") @RequestParam("goodsId") Long goodsId){
 //        if(!miaoshaService.checkPath(miaoshaUser,goodsId,path)) return CommonUtil.errorJson("秒杀接口错误");
@@ -55,10 +55,18 @@ public class MiaoShaController implements InitializingBean{
 
     //@AccessLimit(seconds = 5,maxCount = 5,needLogin = true)
     @PostMapping("/{path}/Optimism")
-    @ApiOperation(value = "乐观锁秒杀")
+    @ApiOperation(value = "乐观锁防止超发")
     public JSONObject miaoshaOptimism(MiaoshaUser miaoshaUser,@PathVariable("path") String path,
                                       @ApiParam(value = "商品id") @RequestParam("goodsId") Long goodsId){
         return miaoshaService.miaoshaOptimism(miaoshaUser,goodsId);
+    }
+
+
+    @PostMapping("/{path}/MessageQueue")
+    @ApiOperation(value = "消息队列秒杀")
+    public JSONObject miaoshaMessageQueue(MiaoshaUser miaoshaUser,@PathVariable("path") String path,
+                                          @ApiParam(value = "商品id") @RequestParam("googsId") Long goodsId){
+        return miaoshaService.miaoshaMessageQueue(miaoshaUser,goodsId,path,localHashMap);
     }
 
     @Override

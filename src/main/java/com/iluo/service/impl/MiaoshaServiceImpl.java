@@ -1,23 +1,34 @@
 package com.iluo.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.iluo.config.exception.CommonJsonException;
 import com.iluo.dao.MiaoshaGoodsDAO;
 import com.iluo.dao.MiaoshaGoodsManualDAO;
-import com.iluo.po.MiaoshaGoods;
-import com.iluo.po.MiaoshaUser;
+import com.iluo.dao.MiaoshaUserDAO;
+import com.iluo.po.*;
+import com.iluo.rabbitmq.MQSender;
+import com.iluo.rabbitmq.MiaoshaMessage;
+import com.iluo.redis.GoodsKey;
+import com.iluo.redis.MiaoShaUserKey;
 import com.iluo.redis.MiaoshaKey;
 import com.iluo.redis.RedisService;
 import com.iluo.service.GoodsService;
 import com.iluo.service.MiaoshaService;
 import com.iluo.service.OrderService;
+import com.iluo.service.UserService;
 import com.iluo.util.CommonUtil;
 import com.iluo.util.MD5Utils;
 import com.iluo.util.UUIDUtil;
+import com.iluo.util.constants.ErrorEnum;
+import com.iluo.vo.GoodsVo;
 import com.iluo.vo.LoginVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by Yang Xing Luo on 2019/12/26.
@@ -38,6 +49,18 @@ public class MiaoshaServiceImpl implements MiaoshaService {
 
     @Autowired
     private GoodsService goodsService;
+
+    @Autowired
+    private MQSender mqSender;
+
+    @Autowired
+    private MiaoshaUserDAO miaoshaUserDAO;
+
+
+    @Autowired
+    private UserService userService;
+
+
 
     @Override
     public JSONObject miaoshaPessimism(MiaoshaUser miaoshaUser,Long id){
@@ -86,25 +109,87 @@ public class MiaoshaServiceImpl implements MiaoshaService {
 
     public String createToken(HttpServletResponse response , LoginVo loginVo) {
         if(loginVo ==null){
-            throw  new GlobleException(SYSTEM_ERROR);
+            throw  new CommonJsonException(ErrorEnum.E_505);
         }
 
-        String mobile =loginVo.getMobile();
+        String mobile =loginVo.getId().toString();
         String password =loginVo.getPassword();
         MiaoshaUser user = getByNickName(mobile);
         if(user == null) {
-            throw new GlobleException(MOBILE_NOT_EXIST);
+            throw new CommonJsonException(ErrorEnum.E_505);
         }
 
         String dbPass = user.getPassword();
         String saltDb = user.getSalt();
         String calcPass = MD5Utils.formPassToDBPass(password,saltDb);
         if(!calcPass.equals(dbPass)){
-            throw new GlobleException(PASSWORD_ERROR);
+            throw new CommonJsonException(ErrorEnum.E_505);
         }
         //生成cookie 将session返回游览器 分布式session
         String token= UUIDUtil.uuid();
-        addCookie(response, token, user);
+        userService.addCookie(response, token, user);
         return token ;
     }
+
+    public MiaoshaUser getByNickName(String nickName) {
+        //取缓存
+        MiaoshaUser user = redisService.get(MiaoShaUserKey.getByNickName, ""+nickName, MiaoshaUser.class);
+        if(user != null) {
+            return user;
+        }
+        //取数据库
+        MiaoshaUserExample miaoshaUserExample = new MiaoshaUserExample();
+        miaoshaUserExample.createCriteria().andNicknameEqualTo(nickName);
+        List<MiaoshaUser> miaoshaUsers= miaoshaUserDAO.selectByExample(miaoshaUserExample);
+        if(miaoshaUsers != null) {
+            user = miaoshaUsers.get(0);
+            redisService.set(MiaoShaUserKey.getByNickName, ""+nickName, user);
+        }
+        return user;
+    }
+
+
+
+    @Transactional
+    public OrderInfo miaosha(MiaoshaUser user, GoodsVo goods) {
+        //减库存 下订单 写入秒杀订单
+        int success = miaoshaGoodsManualDAO.reduceStockPessimism(goods.getId());
+        if(success > 0){
+            return orderService.createOrder(user,goods.getId()) ;
+        }else {
+            //如果库存不存在则内存标记为true
+            setGoodsOver(goods.getId());
+            return null;
+        }
+    }
+
+    private void setGoodsOver(Long goodsId) {
+        redisService.set(MiaoshaKey.isGoodsOver, ""+goodsId, true);
+    }
+
+
+    @Override
+    public JSONObject miaoshaMessageQueue(MiaoshaUser user,Long goodsId,String path,HashMap<Long,Boolean> hashMap){
+        if(user == null) return CommonUtil.errorJson("session不存在或者已经过期");
+
+        //if(!checkPath(user,goodsId,path)) return CommonUtil.errorJson("接口错误");
+
+        MiaoshaOrder miaoshaOrder = orderService.getMiaoshaOrderByUserIdGoodsId(user.getId(),goodsId);
+        if(miaoshaOrder != null) return CommonUtil.errorJson("已经秒杀到商品");
+
+        if(hashMap.get(goodsId)) return CommonUtil.errorJson("商品秒杀完毕");
+
+        Long stock = redisService.decr(GoodsKey.getMiaoshaGoodsStock,"" + goodsId);
+        if(stock < 0){
+            hashMap.put(goodsId,true);
+            return CommonUtil.errorJson("商品秒杀完毕");
+        }
+
+        MiaoshaMessage mm = new MiaoshaMessage();
+        mm.setGoodsId(goodsId);
+        mm.setUser(user);
+        mqSender.sendMiaoshaMessage(mm);
+        return CommonUtil.successJson();
+    }
+
 }
